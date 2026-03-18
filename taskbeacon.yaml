@@ -1,0 +1,15 @@
+id: H000020
+slug: one-armed-bandit
+title: One-Armed Bandit Task
+acquisition: behavior
+variant: html
+cognitive_domain:
+  - reinforcement-learning
+  - value-based-decision-making
+  - adaptive-choice
+maturity: prototype
+version:
+  release_tag: "0.1.0"
+contracts:
+  psyflow_web_taps: v0.1.0
+maintainer: []
