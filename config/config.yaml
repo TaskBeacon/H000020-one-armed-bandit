@@ -7,11 +7,11 @@ subinfo_fields:
       digits: 3
 
 subinfo_mapping:
-  subject_id: Subject ID (3 digits)
-  Participant Information: Participant Information
-  registration_failed: Registration failed
-  registration_successful: Registration successful
-  invalid_input: "{field} is invalid"
+  subject_id: 被试编号（3位）
+  Participant Information: 被试信息
+  registration_failed: 注册失败
+  registration_successful: 注册成功
+  invalid_input: "{field} 输入无效"
 
 window:
   size: [1280, 720]
@@ -24,11 +24,11 @@ window:
   monitor_distance_cm: 60
 
 task:
-  task_name: one_armed_bandit_preview
+  task_name: one_armed_bandit
   save_path: ./outputs/human
   language: Chinese
   voice_name: zh-CN-YunyangNeural
-  voice_enabled: true
+  voice_enabled: false
   total_blocks: 4
   total_trials: 160
   trial_per_block: 40
@@ -67,8 +67,8 @@ stimuli:
     text: |
       单臂老虎机学习任务
 
-      每个试次你会看到左、右两台机器。
-      按 F 选择左侧，按 J 选择右侧。
+      每一试次请在左右两台机器中选择一台。
+      按 F 选左侧，按 J 选右侧。
       系统会给出中奖或未中奖反馈，请持续学习更优选项。
 
       按空格键开始。
@@ -152,7 +152,7 @@ stimuli:
     type: text
     font: SimHei
     text: |
-      中奖：+{reward_delta} 分
+      中奖！ +{reward_delta} 分
       当前总分：{total_score}
     color: green
     height: 38
@@ -162,7 +162,7 @@ stimuli:
     type: text
     font: SimHei
     text: |
-      未中奖：+{reward_delta} 分
+      未中奖 +{reward_delta} 分
       当前总分：{total_score}
     color: orange
     height: 38
@@ -173,9 +173,7 @@ stimuli:
     font: SimHei
     text: |
       区块 {block_num}/{total_blocks}
-      左侧选择率：{left_rate}
-      中奖率：{win_rate}
-      非超时率：{accuracy}
+      记录率：{accuracy:.2%}
       当前分数：{total_score}
 
       按空格键继续
@@ -187,10 +185,7 @@ stimuli:
     type: text
     font: SimHei
     text: |
-      任务结束
-      最终分数：{total_score}
-      左侧选择率：{left_rate}
-      中奖率：{win_rate}
+      任务结束，最终分数：{total_score}
 
       按空格键退出
     color: white

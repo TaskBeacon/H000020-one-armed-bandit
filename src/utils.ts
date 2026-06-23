@@ -28,8 +28,6 @@ export interface BanditConditionSpec {
   p_right: number;
   condition_id: string;
   trial_index: number;
-  fallback_choice: "left" | "right";
-  reward_draw_u: number;
 }
 
 export interface ConditionGenerationConfig {
@@ -50,33 +48,12 @@ function clamp01(value: unknown, fallback = 0.5): number {
   return Math.max(0, Math.min(1, parsed));
 }
 
-function makeSeededRandom(seed: number): () => number {
-  let value = seed >>> 0;
-  return () => {
-    value = (value + 0x6d2b79f5) >>> 0;
-    let t = Math.imul(value ^ (value >>> 15), 1 | value);
-    t ^= t + Math.imul(t ^ (t >>> 7), 61 | t);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-function resolveFallbackChoice(policy: unknown, rng: () => number): "left" | "right" {
-  const policyText = String(policy ?? "random").trim().toLowerCase();
-  if (policyText === "left") {
-    return "left";
-  }
-  if (policyText === "right") {
-    return "right";
-  }
-  return rng() < 0.5 ? "left" : "right";
-}
-
 export function build_bandit_schedule(
   n_trials: number,
   _condition_labels: string[],
   block_idx: number,
   condition_generation: ConditionGenerationConfig | undefined,
-  seed: number
+  _seed: number
 ): string[] {
   const nTrials = Math.max(0, Math.trunc(n_trials));
   if (nTrials <= 0) {
@@ -97,16 +74,13 @@ export function build_bandit_schedule(
     Math.round(pRight * 100)
   ).padStart(2, "0")}`;
 
-  const rng = makeSeededRandom(Math.trunc(seed));
   const conditions: string[] = [];
   for (let trialIndex = 0; trialIndex < nTrials; trialIndex += 1) {
     const spec: BanditConditionSpec = {
       p_left: pLeft,
       p_right: pRight,
       condition_id: conditionId,
-      trial_index: trialIndex + 1,
-      fallback_choice: resolveFallbackChoice(config.no_choice_policy, rng),
-      reward_draw_u: rng()
+      trial_index: trialIndex + 1
     };
     conditions.push(JSON.stringify(spec));
   }
@@ -119,9 +93,7 @@ export function parse_bandit_condition(condition: string): BanditConditionSpec {
     p_left: clamp01(parsed.p_left, 0.5),
     p_right: clamp01(parsed.p_right, 0.5),
     condition_id: String(parsed.condition_id ?? "L50_R50"),
-    trial_index: Number(parsed.trial_index ?? 1),
-    fallback_choice: parsed.fallback_choice === "left" ? "left" : "right",
-    reward_draw_u: clamp01(parsed.reward_draw_u, Math.random())
+    trial_index: Number(parsed.trial_index ?? 1)
   };
 }
 
@@ -160,7 +132,7 @@ function toPercent(numerator: number, denominator: number): string {
 export function summarizeBlock(rows: ReducedTrialRow[], blockId: string): {
   left_rate: string;
   win_rate: string;
-  accuracy: string;
+  accuracy: number;
   total_score: number;
 } {
   const blockRows = rows.filter((row) => String(row.block_id ?? "") === blockId);
@@ -172,7 +144,7 @@ export function summarizeBlock(rows: ReducedTrialRow[], blockId: string): {
   return {
     left_rate: toPercent(leftCount, n),
     win_rate: toPercent(winCount, n),
-    accuracy: toPercent(nonForcedCount, n),
+    accuracy: nonForcedCount / Math.max(1, n),
     total_score: totalScore
   };
 }
